@@ -57,8 +57,8 @@ class Play extends Phaser.Scene {
             color: '#843605',
             align: 'right',
             padding: {
-            top: 5,
-            bottom: 5,
+                top: 5,
+                bottom: 5,
             },
             fixedWidth: 100
         }
@@ -69,11 +69,12 @@ class Play extends Phaser.Scene {
         
         // 60-second play clock
         scoreConfig.fixedWidth = 0;
-        this.clock = this.time.delayedCall(6000, () => {
+        this.clock = this.time.delayedCall(game.settings.gameTimer, () => {
             this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', scoreConfig).setOrigin(0.5);
-            this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart', scoreConfig).setOrigin(0.5);
+            this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ← for Menu', scoreConfig).setOrigin(0.5);
             this.gameOver = true;
         }, null, this);
+
     }
 
     update() {
@@ -81,7 +82,7 @@ class Play extends Phaser.Scene {
         if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)){
             this.scene.restart();
         }
-        
+
         this.starfield.tilePositionX -= 4;
 
         if(!this.gameOver){
@@ -89,6 +90,10 @@ class Play extends Phaser.Scene {
             this.ship01.update();
             this.ship02.update();
             this.ship03.update();
+        }
+
+        if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyLEFT)) {
+            this.scene.start("menuScene");
         }
 
         // check collisions
@@ -131,7 +136,8 @@ class Play extends Phaser.Scene {
         });  
         // score add and repaint
         this.p1Score += ship.points;
-        this.scoreLeft.text = this.p1Score;     
+        this.scoreLeft.text = this.p1Score; 
+        this.sound.play('sfx_explosion');    
     }
 }
 
