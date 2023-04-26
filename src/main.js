@@ -14,3 +14,5 @@ let borderPadding = borderUISize / 3;
 // reserve some keyboard variables
 let keyF, keyR, keyLEFT, keyRIGHT;
 
+// variable outside to keep track of highscore 
+let highScore;

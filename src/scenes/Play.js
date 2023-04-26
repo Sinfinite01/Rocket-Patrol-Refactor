@@ -81,20 +81,23 @@ class Play extends Phaser.Scene {
             fontSize: '28px',
             backgroundColor: '#F3B141',
             color: '#843605',
-            align: 'right',
+            align: 'middle',
             padding: {
                 top: 5,
                 bottom: 5,
             },
             fixedWidth: 0
         } 
-        this.fireText = this.add.text(game.config.width/2, borderUISize + borderPadding*2, 'FIRE', fireConfig);
+        this.fireText = this.add.text(game.config.width/2 - borderUISize, borderUISize + borderPadding*2, 'FIRE', fireConfig);
         this.fireText.alpha = 0;
     }
 
     update() {
         //check key input for restart
         if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)){
+            if(this.p1Score > highScore){
+                highScore = this.p1Score;
+            }
             this.scene.restart();
         }
 
