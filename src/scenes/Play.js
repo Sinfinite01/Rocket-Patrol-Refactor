@@ -75,6 +75,21 @@ class Play extends Phaser.Scene {
             this.gameOver = true;
         }, null, this);
 
+        // display "FIRE" text
+        let fireConfig = {
+            fontFamily: 'Courier',
+            fontSize: '28px',
+            backgroundColor: '#F3B141',
+            color: '#843605',
+            align: 'right',
+            padding: {
+                top: 5,
+                bottom: 5,
+            },
+            fixedWidth: 0
+        } 
+        this.fireText = this.add.text(game.config.width/2, borderUISize + borderPadding*2, 'FIRE', fireConfig);
+        this.fireText.alpha = 0;
     }
 
     update() {
@@ -108,6 +123,13 @@ class Play extends Phaser.Scene {
         if (this.checkCollision(this.p1Rocket, this.ship01)) {
             this.p1Rocket.reset();
             this.shipExplode(this.ship01);
+        }
+
+        if(this.p1Rocket.isFiring){
+            this.fireText.alpha = 1;
+        }
+        else{
+            this.fireText.alpha = 0;
         }
     }
 
