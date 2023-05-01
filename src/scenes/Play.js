@@ -7,7 +7,9 @@ class Play extends Phaser.Scene {
         //load images/tile sprites
         this.load.image('rocket', './assets/rocket.png');
         this.load.image('spaceship', './assets/spaceship.png');
-        this.load.image('starfield', './assets/starfield.png');
+        this.load.image('myStarfield1', './assets/myStarfield1.png');
+        this.load.image('myStarfield2', './assets/myStarfield2.png');
+        this.load.image('myStarfield3', './assets/myStarfield3.png');
         
         // load spritesheet
         this.load.spritesheet('explosion', './assets/explosion.png', {frameWidth: 64, frameHeight: 32, startFrame: 0, endFrame: 9});
@@ -15,8 +17,11 @@ class Play extends Phaser.Scene {
 
     create(){
         // place tile sprite
-        this.starfield = this.add.tileSprite(0, 0, 640, 480, 'starfield').setOrigin(0, 0);
+        this.myStarfield1 = this.add.tileSprite(0, 0, 640, 240, 'myStarfield1').setOrigin(0, 0);
+        this.myStarfield2 = this.add.tileSprite(0, 230, 640, 120, 'myStarfield2').setOrigin(0, 0);
+        this.myStarfield3 = this.add.tileSprite(0, 340, 640, 120, 'myStarfield3').setOrigin(0, 0);
         
+
         // green UI background
         this.add.rectangle(0, borderUISize + borderPadding, game.config.width, borderUISize * 2, 0x00FF00).setOrigin(0, 0);
         // white borders
@@ -38,6 +43,7 @@ class Play extends Phaser.Scene {
         keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
         keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
         keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
+        keyUP = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
     
         // animation config
         this.anims.create({
@@ -73,11 +79,16 @@ class Play extends Phaser.Scene {
         scoreConfig.fixedWidth = 0;
         this.clock = this.time.delayedCall(game.settings.gameTimer, () => {
             this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', scoreConfig).setOrigin(0.5);
-            this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ← for Menu', scoreConfig).setOrigin(0.5);
+            this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ↑ for Menu', scoreConfig).setOrigin(0.5);
             this.add.text(game.config.width/2, game.config.height/2 + 64*2, 'High Score: ' + highScore, scoreConfig).setOrigin(0.5);
             this.gameOver = true;
         }, null, this);
 
+        this.clock = this.time.delayedCall(30000, () => {
+            this.ship01.moveSpeed *= 1.5;
+            this.ship02.moveSpeed *= 1.5;
+            this.ship03.moveSpeed *= 1.5;
+        }, null, this);
 
         //clock
         this.scoreRight = this.add.text(game.config.width/2 + borderUISize*4 + borderPadding*4, borderUISize + borderPadding*2, Math.floor(this.time.now), scoreConfig);
@@ -104,6 +115,9 @@ class Play extends Phaser.Scene {
         this.backgroundMusic.play();
 
         this.initTime = this.time.now;
+
+        this.speedUpText = this.add.text(game.config.width/2, game.config.height/2, 'SPEED UP!!!', scoreConfig).setOrigin(0.5);
+        this.speedUpText.alpha = 0;
     }
 
     update() {
@@ -122,9 +136,17 @@ class Play extends Phaser.Scene {
         //clock
         if(!this.gameOver){
             this.scoreRight.text = Math.floor((this.time.now-this.initTime)/1000);
+            if(Math.floor((this.time.now-this.initTime)/1000) == 30){
+                this.speedUpText.alpha = 1;
+            }
+            else{
+                this.speedUpText.alpha = 0;
+            }
         }
 
-        this.starfield.tilePositionX -= 4;
+        this.myStarfield1.tilePositionX -= 5;
+        this.myStarfield2.tilePositionX -= 7;
+        this.myStarfield3.tilePositionX -= 9;
 
         if(!this.gameOver){
             this.p1Rocket.update();
@@ -133,7 +155,7 @@ class Play extends Phaser.Scene {
             this.ship03.update();
         }
 
-        if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyLEFT)) {
+        if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyUP)) {
             this.backgroundMusic.stop();
             this.scene.start("menuScene");
         }
