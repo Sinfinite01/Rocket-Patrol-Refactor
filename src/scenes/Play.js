@@ -66,20 +66,23 @@ class Play extends Phaser.Scene {
         //game score
         this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, this.p1Score, scoreConfig);
 
-        //high score
-        this.scoreRight = this.add.text(game.config.width/2 + borderUISize*3 + borderPadding*3, borderUISize + borderPadding*2, 'HS:' + highScore, scoreConfig);
-        this.scoreRight.fixedWidth = 0;
-
         // GAME OVER flag
         this.gameOver = false;
-        
+
         // 60-second play clock
         scoreConfig.fixedWidth = 0;
         this.clock = this.time.delayedCall(game.settings.gameTimer, () => {
             this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', scoreConfig).setOrigin(0.5);
             this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ← for Menu', scoreConfig).setOrigin(0.5);
+            this.add.text(game.config.width/2, game.config.height/2 + 64*2, 'High Score: ' + highScore, scoreConfig).setOrigin(0.5);
             this.gameOver = true;
         }, null, this);
+
+
+        //clock
+        this.scoreRight = this.add.text(game.config.width/2 + borderUISize*4 + borderPadding*4, borderUISize + borderPadding*2, Math.floor(this.time.now), scoreConfig);
+        this.scoreRight.fixedWidth = 0;
+        this.scoreRight.align = 'right';
 
         // display "FIRE" text
         let fireConfig = {
@@ -98,6 +101,9 @@ class Play extends Phaser.Scene {
         this.fireText.alpha = 0;
 
         this.backgroundMusic = this.sound.add('sfx_background');
+        this.backgroundMusic.play();
+
+        this.initTime = this.time.now;
     }
 
     update() {
@@ -105,10 +111,17 @@ class Play extends Phaser.Scene {
         if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)){
             this.backgroundMusic.stop();
             this.scene.restart();
+            this.backgroundMusic.play();
+            this.initTime = this.time.now;
         }
 
         if(!this.backgroundMusic.isPlaying){
             this.backgroundMusic.play();
+        }
+
+        //clock
+        if(!this.gameOver){
+            this.scoreRight.text = Math.floor((this.time.now-this.initTime)/1000);
         }
 
         this.starfield.tilePositionX -= 4;
@@ -178,7 +191,6 @@ class Play extends Phaser.Scene {
         if(this.p1Score > highScore){
             highScore = this.p1Score;
         }
-        this.scoreRight.text = 'HS:' + highScore;
         this.sound.play('sfx_explosion');    
     }
 }
