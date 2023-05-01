@@ -55,15 +55,21 @@ class Play extends Phaser.Scene {
             fontSize: '28px',
             backgroundColor: '#F3B141',
             color: '#843605',
-            align: 'right',
+            align: 'left',
             padding: {
                 top: 5,
                 bottom: 5,
             },
             fixedWidth: 100
         }
+
+        //game score
         this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, this.p1Score, scoreConfig);
-    
+
+        //high score
+        this.scoreRight = this.add.text(game.config.width/2 + borderUISize*3 + borderPadding*3, borderUISize + borderPadding*2, 'HS:' + highScore, scoreConfig);
+        this.scoreRight.fixedWidth = 0;
+
         // GAME OVER flag
         this.gameOver = false;
         
@@ -90,15 +96,19 @@ class Play extends Phaser.Scene {
         } 
         this.fireText = this.add.text(game.config.width/2 - borderUISize, borderUISize + borderPadding*2, 'FIRE', fireConfig);
         this.fireText.alpha = 0;
+
+        this.backgroundMusic = this.sound.add('sfx_background');
     }
 
     update() {
         //check key input for restart
         if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)){
-            if(this.p1Score > highScore){
-                highScore = this.p1Score;
-            }
+            this.backgroundMusic.stop();
             this.scene.restart();
+        }
+
+        if(!this.backgroundMusic.isPlaying){
+            this.backgroundMusic.play();
         }
 
         this.starfield.tilePositionX -= 4;
@@ -111,6 +121,7 @@ class Play extends Phaser.Scene {
         }
 
         if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyLEFT)) {
+            this.backgroundMusic.stop();
             this.scene.start("menuScene");
         }
 
@@ -161,7 +172,13 @@ class Play extends Phaser.Scene {
         });  
         // score add and repaint
         this.p1Score += ship.points;
-        this.scoreLeft.text = this.p1Score; 
+        this.scoreLeft.text = this.p1Score;
+        
+        //update high score
+        if(this.p1Score > highScore){
+            highScore = this.p1Score;
+        }
+        this.scoreRight.text = 'HS:' + highScore;
         this.sound.play('sfx_explosion');    
     }
 }
