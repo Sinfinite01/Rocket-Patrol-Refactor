@@ -7,6 +7,7 @@ class Play extends Phaser.Scene {
         //load images/tile sprites
         this.load.image('rocket', './assets/rocket.png');
         this.load.image('spaceship', './assets/spaceship.png');
+        this.load.image('mySpaceship', './assets/mySpaceship2.png');
         this.load.image('myStarfield1', './assets/myStarfield1.png');
         this.load.image('myStarfield2', './assets/myStarfield2.png');
         this.load.image('myStarfield3', './assets/myStarfield3.png');
@@ -34,9 +35,13 @@ class Play extends Phaser.Scene {
         this.p1Rocket = new Rocket(this, game.config.width/2, game.config.height - borderUISize - borderPadding, 'rocket').setOrigin(0.5,0);
         
         // add spaceships (x3)
-        this.ship01 = new Spaceship(this, game.config.width + borderUISize*6, borderUISize*4, 'spaceship', 0, 30).setOrigin(0, 0);
-        this.ship02 = new Spaceship(this, game.config.width + borderUISize*3, borderUISize*5 + borderPadding*2, 'spaceship', 0, 20).setOrigin(0,0);
-        this.ship03 = new Spaceship(this, game.config.width, borderUISize*6 + borderPadding*4, 'spaceship', 0, 10).setOrigin(0,0);
+        this.ship01 = new Spaceship(this, game.config.width - borderUISize*6, borderUISize*4, 'spaceship', 0, 30).setOrigin(0, 0);
+        this.ship02 = new Spaceship(this, game.config.width - borderUISize*3, borderUISize*5 + borderPadding*5, 'spaceship', 0, 20).setOrigin(0,0);
+        this.ship03 = new Spaceship(this, game.config.width, borderUISize*6 + borderPadding*6, 'spaceship', 0, 10).setOrigin(0,0);
+        
+        //make smaller faster ship
+        this.ship04 = new Spaceship(this, game.config.width - borderUISize*4, borderUISize*5 + borderPadding*2, 'mySpaceship', 0, 50).setOrigin(0,0);
+        this.ship04.moveSpeed *= 1.5;
 
         //define keyboard keys
         keyF = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F);
@@ -77,21 +82,24 @@ class Play extends Phaser.Scene {
 
         // 60-second play clock
         scoreConfig.fixedWidth = 0;
-        this.clock = this.time.delayedCall(game.settings.gameTimer, () => {
+        /*this.clock = this.time.delayedCall(game.settings.gameTimer, () => {
             this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', scoreConfig).setOrigin(0.5);
             this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ↑ for Menu', scoreConfig).setOrigin(0.5);
             this.add.text(game.config.width/2, game.config.height/2 + 64*2, 'High Score: ' + highScore, scoreConfig).setOrigin(0.5);
             this.gameOver = true;
-        }, null, this);
+        }, null, this);*/
 
         this.clock = this.time.delayedCall(30000, () => {
             this.ship01.moveSpeed *= 1.5;
             this.ship02.moveSpeed *= 1.5;
             this.ship03.moveSpeed *= 1.5;
+            this.ship04.moveSpeed *= 1.5;
         }, null, this);
 
         //clock
-        this.scoreRight = this.add.text(game.config.width/2 + borderUISize*4 + borderPadding*4, borderUISize + borderPadding*2, Math.floor(this.time.now), scoreConfig);
+        this.clockRightCounter = Math.floor(game.settings.gameTimer/1000);
+        this.addedTime = 0;
+        this.scoreRight = this.add.text(game.config.width/2 + borderUISize*4 + borderPadding*4, borderUISize + borderPadding*2, this.clockRightCounter, scoreConfig);
         this.scoreRight.fixedWidth = 0;
         this.scoreRight.align = 'right';
 
@@ -112,21 +120,42 @@ class Play extends Phaser.Scene {
         this.fireText.alpha = 0;
 
         this.backgroundMusic = this.sound.add('sfx_background');
-        this.backgroundMusic.play();
-
+        if(!this.backgroundMusic.isPlaying){
+            this.backgroundMusic.play();
+        }
+        
         this.initTime = this.time.now;
 
         this.speedUpText = this.add.text(game.config.width/2, game.config.height/2, 'SPEED UP!!!', scoreConfig).setOrigin(0.5);
         this.speedUpText.alpha = 0;
+
+        this.endScreen1 = this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', scoreConfig).setOrigin(0.5);
+        this.endScreen2 = this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ↑ for Menu', scoreConfig).setOrigin(0.5);
+        this.endScreen3 = this.add.text(game.config.width/2, game.config.height/2 + 64*2, 'High Score: ' + highScore, scoreConfig).setOrigin(0.5);
+        this.endScreen1.alpha = 0;
+        this.endScreen2.alpha = 0;
+        this.endScreen3.alpha = 0;
     }
 
     update() {
+
         //check key input for restart
         if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)){
             this.backgroundMusic.stop();
             this.scene.restart();
-            this.backgroundMusic.play();
+            //this.backgroundMusic.play();
             this.initTime = this.time.now;
+        }
+
+        //is time up?
+        if(!this.gameOver){
+            if(this.clockRightCounter <= 0){
+                this.endScreen1.alpha = 1;
+                this.endScreen2.alpha = 1;
+                this.endScreen3.alpha = 1;
+                this.endScreen3.text = 'High Score: ' + highScore;
+                this.gameOver = true;
+            }
         }
 
         if(!this.backgroundMusic.isPlaying){
@@ -135,7 +164,8 @@ class Play extends Phaser.Scene {
 
         //clock
         if(!this.gameOver){
-            this.scoreRight.text = Math.floor((this.time.now-this.initTime)/1000);
+            this.clockRightCounter = Math.floor(game.settings.gameTimer/1000) - Math.floor((this.time.now-this.initTime)/1000) + this.addedTime;
+            this.scoreRight.text = this.clockRightCounter;
             if(Math.floor((this.time.now-this.initTime)/1000) == 30){
                 this.speedUpText.alpha = 1;
             }
@@ -143,6 +173,7 @@ class Play extends Phaser.Scene {
                 this.speedUpText.alpha = 0;
             }
         }
+
 
         this.myStarfield1.tilePositionX -= 5;
         this.myStarfield2.tilePositionX -= 7;
@@ -153,6 +184,7 @@ class Play extends Phaser.Scene {
             this.ship01.update();
             this.ship02.update();
             this.ship03.update();
+            this.ship04.update();
         }
 
         if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyUP)) {
@@ -164,14 +196,23 @@ class Play extends Phaser.Scene {
         if(this.checkCollision(this.p1Rocket, this.ship03)) {
             this.p1Rocket.reset();
             this.shipExplode(this.ship03);
+            this.addedTime += 1;
         }
         if (this.checkCollision(this.p1Rocket, this.ship02)) {
             this.p1Rocket.reset();
             this.shipExplode(this.ship02);
+            this.addedTime += 2;
         }
         if (this.checkCollision(this.p1Rocket, this.ship01)) {
             this.p1Rocket.reset();
             this.shipExplode(this.ship01);
+            this.addedTime += 3;
+        }
+
+        if (this.checkCollision(this.p1Rocket, this.ship04)) {
+            this.p1Rocket.reset();
+            this.shipExplode(this.ship04);
+            this.addedTime += 3;
         }
 
         if(this.p1Rocket.isFiring){
@@ -197,6 +238,7 @@ class Play extends Phaser.Scene {
     shipExplode(ship) {
         // temporarily hide ship
         ship.alpha = 0;
+        //this.scoreConfig.color = '#3BB143';
         // create explosion sprite at ship's position
         let boom = this.add.sprite(ship.x, ship.y, 'explosion').setOrigin(0, 0);
         boom.anims.play('explode');             // play explode animation
@@ -213,7 +255,25 @@ class Play extends Phaser.Scene {
         if(this.p1Score > highScore){
             highScore = this.p1Score;
         }
-        this.sound.play('sfx_explosion');    
+
+        this.explosionNum =  Math.floor(Math.random()*4); 
+        if(this.explosionNum == 0){
+            this.sound.play('sfx_explosion1');
+        }
+        else if(this.explosionNum == 1){
+            this.sound.play('sfx_explosion2');
+        }    
+        else if(this.explosionNum == 2){
+            this.sound.play('sfx_explosion3');
+        }
+        else if(this.explosionNum == 3){
+            this.sound.play('sfx_explosion4');
+        }
+        
+        //this.scoreRight.color = '#3BB143'
+        /*this.clock = this.time.delayedCall(1000, () => {
+            this.scoreRight.color = '#843605'
+        }, null, this);*/
     }
 }
 
