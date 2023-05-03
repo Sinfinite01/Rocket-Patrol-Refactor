@@ -123,7 +123,7 @@ class Play extends Phaser.Scene {
         if(!this.backgroundMusic.isPlaying){
             this.backgroundMusic.play();
         }
-        
+
         this.initTime = this.time.now;
 
         this.speedUpText = this.add.text(game.config.width/2, game.config.height/2, 'SPEED UP!!!', scoreConfig).setOrigin(0.5);
@@ -164,7 +164,7 @@ class Play extends Phaser.Scene {
 
         //clock
         if(!this.gameOver){
-            this.clockRightCounter = Math.floor(game.settings.gameTimer/1000) - Math.floor((this.time.now-this.initTime)/1000) + this.addedTime;
+            this.clockRightCounter = Math.floor(game.settings.gameTimer/1000) - Math.floor((this.time.now-this.initTime)/1000) + Math.floor(this.addedTime);
             this.scoreRight.text = this.clockRightCounter;
             if(Math.floor((this.time.now-this.initTime)/1000) == 30){
                 this.speedUpText.alpha = 1;
@@ -196,23 +196,23 @@ class Play extends Phaser.Scene {
         if(this.checkCollision(this.p1Rocket, this.ship03)) {
             this.p1Rocket.reset();
             this.shipExplode(this.ship03);
-            this.addedTime += 1;
+            this.addedTime += 0.5;
         }
         if (this.checkCollision(this.p1Rocket, this.ship02)) {
             this.p1Rocket.reset();
             this.shipExplode(this.ship02);
-            this.addedTime += 2;
+            this.addedTime += 1;
         }
         if (this.checkCollision(this.p1Rocket, this.ship01)) {
             this.p1Rocket.reset();
             this.shipExplode(this.ship01);
-            this.addedTime += 3;
+            this.addedTime += 2;
         }
 
         if (this.checkCollision(this.p1Rocket, this.ship04)) {
             this.p1Rocket.reset();
             this.shipExplode(this.ship04);
-            this.addedTime += 3;
+            this.addedTime += 2;
         }
 
         if(this.p1Rocket.isFiring){
